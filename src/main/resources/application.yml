@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: smart-grid-energy-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/smartgrid}
+    username: ${DATABASE_USERNAME:smartgrid}
+    password: ${DATABASE_PASSWORD:smartgrid}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
