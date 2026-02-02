@@ -2,6 +2,7 @@ package at.wien.smartgrid.controller;
 
 import at.wien.smartgrid.dto.AggregatedConsumptionResponse;
 import at.wien.smartgrid.service.GridAnalyticsService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,9 +19,9 @@ public class GridAnalyticsController {
     }
 
     @GetMapping("/grid-load")
+    @Operation(summary = "Aggregate grid load for a supported timespan")
     public AggregatedConsumptionResponse gridLoad(
             @RequestParam(defaultValue = "24h") String timespan) {
         return analyticsService.loadFor(timespan);
     }
 }
-
