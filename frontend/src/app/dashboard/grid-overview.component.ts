@@ -3,13 +3,14 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { EMPTY, catchError, finalize } from 'rxjs';
 import { AnalyticsTimespan, GridLoadAnalytics } from '../core/api.models';
 import { SmartGridApiService } from '../core/smart-grid-api.service';
+import { LoadProfileChartComponent } from './load-profile-chart.component';
 
 const TIMESPANS: readonly AnalyticsTimespan[] = ['1h', '6h', '24h', '7d'];
 
 @Component({
   selector: 'app-grid-overview',
   standalone: true,
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, LoadProfileChartComponent],
   template: `
     <section class="overview" aria-labelledby="overview-heading">
       <div class="section-heading">
@@ -36,6 +37,7 @@ const TIMESPANS: readonly AnalyticsTimespan[] = ['1h', '6h', '24h', '7d'];
           <article><span>Active meters</span><strong>{{ data.activeMeterCount }}</strong><small>{{ data.readingCount }} readings</small></article>
           <article><span>Average signal</span><strong>{{ data.averageConsumptionKwh | number:'1.1-2' }}</strong><small>kWh / reading</small></article>
         </div>
+        <app-load-profile-chart [points]="data.loadProfile" />
       }
     </section>
   `,
@@ -72,4 +74,3 @@ export class GridOverviewComponent implements OnInit {
     ).subscribe(data => this.analytics.set(data));
   }
 }
-
