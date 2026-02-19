@@ -9,7 +9,10 @@ describe('AppComponent', () => {
       imports: [AppComponent],
       providers: [{
         provide: SmartGridApiService,
-        useValue: { getGridLoad: () => of({ timespan: '24h', readingCount: 0, loadProfile: [] }) }
+        useValue: {
+          getGridLoad: () => of({ timespan: '24h', readingCount: 0, loadProfile: [] }),
+          ingestReading: jasmine.createSpy()
+        }
       }]
     }).compileComponents();
     const fixture = TestBed.createComponent(AppComponent);

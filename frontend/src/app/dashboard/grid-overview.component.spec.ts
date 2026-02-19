@@ -10,7 +10,8 @@ describe('GridOverviewComponent', () => {
         timespan: '24h', from: '', to: '', totalConsumptionKwh: 42.5,
         averageConsumptionKwh: 2.5, peakConsumptionKwh: 6.8,
         readingCount: 17, activeMeterCount: 4, loadProfile: []
-      }))
+      })),
+      ingestReading: jasmine.createSpy()
     };
     await TestBed.configureTestingModule({
       imports: [GridOverviewComponent],
@@ -25,4 +26,3 @@ describe('GridOverviewComponent', () => {
     expect(api.getGridLoad).toHaveBeenCalledWith('24h');
   });
 });
-

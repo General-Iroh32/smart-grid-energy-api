@@ -1,0 +1,15 @@
+.ingest-card { margin-top: 4rem; display: grid; grid-template-columns: minmax(220px, .75fr) 1.5fr; gap: clamp(2rem, 7vw, 6rem); padding: clamp(1.4rem, 4vw, 2.5rem); border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+.eyebrow { color: var(--lime); text-transform: uppercase; letter-spacing: .16em; font-size: .7rem; font-weight: 700; margin: 0 0 .7rem; }
+h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -.05em; line-height: 1.05; }
+.form-intro > p:last-child { color: var(--muted); line-height: 1.65; }
+form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+label { color: var(--muted); font-size: .75rem; font-weight: 600; }
+input { width: 100%; margin-top: .45rem; padding: .85rem 1rem; border: 1px solid var(--line); border-radius: 9px; outline: none; color: var(--text); background: var(--surface-2); font-family: 'DM Mono', monospace; }
+input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(149, 244, 91, .1); }
+label small { display: block; color: var(--danger); margin-top: .35rem; }
+.form-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 1rem; min-height: 46px; }
+button { min-width: 180px; border: 0; border-radius: 9px; padding: .85rem 1rem; background: var(--lime); color: #07120f; font-weight: 800; }
+button:disabled { opacity: .55; cursor: wait; }.feedback { margin: 0; font-size: .78rem; }.success { color: var(--lime); }.error { color: var(--danger); }
+@media (max-width: 800px) { .ingest-card { grid-template-columns: 1fr; gap: 1.2rem; } }
+@media (max-width: 560px) { form { grid-template-columns: 1fr; }.form-actions { align-items: stretch; flex-direction: column; }.form-actions button { width: 100%; } }
+

@@ -4,13 +4,14 @@ import { EMPTY, catchError, finalize } from 'rxjs';
 import { AnalyticsTimespan, GridLoadAnalytics } from '../core/api.models';
 import { SmartGridApiService } from '../core/smart-grid-api.service';
 import { LoadProfileChartComponent } from './load-profile-chart.component';
+import { ReadingIngestComponent } from '../readings/reading-ingest.component';
 
 const TIMESPANS: readonly AnalyticsTimespan[] = ['1h', '6h', '24h', '7d'];
 
 @Component({
   selector: 'app-grid-overview',
   standalone: true,
-  imports: [DecimalPipe, LoadProfileChartComponent],
+  imports: [DecimalPipe, LoadProfileChartComponent, ReadingIngestComponent],
   template: `
     <section class="overview" aria-labelledby="overview-heading">
       <div class="section-heading">
@@ -39,6 +40,7 @@ const TIMESPANS: readonly AnalyticsTimespan[] = ['1h', '6h', '24h', '7d'];
         </div>
         <app-load-profile-chart [points]="data.loadProfile" />
       }
+      <app-reading-ingest (readingCreated)="load()" />
     </section>
   `,
   styleUrl: './grid-overview.component.scss',
