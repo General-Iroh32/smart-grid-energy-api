@@ -24,10 +24,15 @@
     "@angular/build": "22.1.2",
     "@angular/cli": "22.1.2",
     "@angular/compiler-cli": "22.1.2",
-    "@types/jasmine": "5.1.9",
-    "eslint": "9.39.2",
+    "@eslint/js": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
+    "angular-eslint": "^22.0.0",
+    "eslint": "^10.8.1",
     "jasmine-core": "5.11.0",
-    "typescript": "6.0.3"
+    "jsdom": "^30.0.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.11"
   }
 }
-

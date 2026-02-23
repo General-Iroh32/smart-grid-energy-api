@@ -60,9 +60,6 @@ export class LoadProfileChartComponent {
 
   private formatTimestamp(value: string | undefined): string {
     if (!value) return '';
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-    }).format(new Date(value));
+    return new Date(value).toISOString().slice(5, 16).replace('T', ' · ');
   }
 }
-

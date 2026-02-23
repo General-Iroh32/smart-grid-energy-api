@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { vi } from 'vitest';
 import { AppComponent } from './app.component';
 import { SmartGridApiService } from './core/smart-grid-api.service';
 
@@ -11,7 +12,7 @@ describe('AppComponent', () => {
         provide: SmartGridApiService,
         useValue: {
           getGridLoad: () => of({ timespan: '24h', readingCount: 0, loadProfile: [] }),
-          ingestReading: jasmine.createSpy()
+          ingestReading: vi.fn()
         }
       }]
     }).compileComponents();

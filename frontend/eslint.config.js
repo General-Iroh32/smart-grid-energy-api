@@ -1,29 +1,18 @@
-const tseslint = require('@typescript-eslint/eslint-plugin');
-const tsParser = require('@typescript-eslint/parser');
-const angular = require('@angular-eslint/eslint-plugin');
-const angularTemplate = require('@angular-eslint/eslint-plugin-template');
-const templateParser = require('@angular-eslint/template-parser');
+const eslint = require('@eslint/js');
+const tseslint = require('typescript-eslint');
+const angular = require('angular-eslint');
 
-module.exports = [
+module.exports = tseslint.config(
   {
     files: ['**/*.ts'],
-    languageOptions: { parser: tsParser, parserOptions: { project: ['./tsconfig.json'] } },
-    plugins: { '@typescript-eslint': tseslint, '@angular-eslint': angular },
+    extends: [eslint.configs.recommended, ...tseslint.configs.recommended, ...angular.configs.tsRecommended],
     processor: angular.processInlineTemplates,
     rules: {
-      ...tseslint.configs.recommended.rules,
-      ...angular.configs.recommended.rules,
       '@angular-eslint/prefer-standalone': 'off'
     }
   },
   {
     files: ['**/*.html'],
-    languageOptions: { parser: templateParser },
-    plugins: { '@angular-eslint/template': angularTemplate },
-    rules: {
-      ...angularTemplate.configs.recommended.rules,
-      ...angularTemplate.configs.accessibility.rules
-    }
+    extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility]
   }
-];
-
+);

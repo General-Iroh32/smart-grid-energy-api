@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { vi } from 'vitest';
 import { IngestReadingRequest } from '../core/api.models';
 import { SmartGridApiService } from '../core/smart-grid-api.service';
 import { ReadingIngestComponent } from './reading-ingest.component';
 
 describe('ReadingIngestComponent', () => {
   it('validates and submits a meter reading', async () => {
-    const api = { ingestReading: jasmine.createSpy().and.callFake((request: IngestReadingRequest) => of({
+    const api = { ingestReading: vi.fn().mockImplementation((request: IngestReadingRequest) => of({
       ...request, receivedAt: '2026-08-20T12:00:01Z'
     })) };
     await TestBed.configureTestingModule({
