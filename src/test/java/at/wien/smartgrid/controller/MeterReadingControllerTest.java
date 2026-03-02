@@ -13,6 +13,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MeterReadingController.class)
@@ -59,5 +60,16 @@ class MeterReadingControllerTest {
                                 """))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Duplicate meter reading"));
+    }
+
+    @Test
+    void allowsTheLoopbackDashboardOrigin() throws Exception {
+        mockMvc.perform(post("/api/v1/readings/ingest")
+                        .header("Origin", "http://127.0.0.1:4200")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string(
+                        "Access-Control-Allow-Origin", "http://127.0.0.1:4200"));
     }
 }

@@ -12,7 +12,8 @@ public class WebConfiguration implements WebMvcConfigurer {
     private final List<String> allowedOrigins;
 
     public WebConfiguration(
-            @Value("${app.cors.allowed-origins:http://localhost:4200}") List<String> allowedOrigins) {
+            @Value("${app.cors.allowed-origins:http://localhost:4200,http://127.0.0.1:4200}")
+                    List<String> allowedOrigins) {
         this.allowedOrigins = allowedOrigins;
     }
 
@@ -25,4 +26,3 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 }
-

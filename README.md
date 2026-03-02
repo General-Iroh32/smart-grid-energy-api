@@ -86,7 +86,7 @@ Environment variables:
 | `DATABASE_URL` | `jdbc:postgresql://localhost:5432/smartgrid` |
 | `DATABASE_USERNAME` | `smartgrid` |
 | `DATABASE_PASSWORD` | `smartgrid` |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200,http://127.0.0.1:4200` |
 | `SPRING_PROFILES_ACTIVE` | unset; use `demo` only for synthetic seed data |
 
 ## API examples
