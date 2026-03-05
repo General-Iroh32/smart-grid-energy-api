@@ -69,6 +69,13 @@ public class SmartMeter {
         return createdAt;
     }
 
+    public void changeStatus(MeterStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object other) {
         return this == other || other instanceof SmartMeter meter && Objects.equals(meterId, meter.meterId);
@@ -79,4 +86,3 @@ public class SmartMeter {
         return Objects.hash(meterId);
     }
 }
-

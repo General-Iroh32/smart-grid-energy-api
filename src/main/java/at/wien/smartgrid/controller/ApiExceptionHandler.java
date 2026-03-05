@@ -1,6 +1,7 @@
 package at.wien.smartgrid.controller;
 
 import at.wien.smartgrid.service.DuplicateReadingException;
+import at.wien.smartgrid.service.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.Instant;
@@ -23,6 +24,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     ProblemDetail handleBadRequest(RuntimeException exception, HttpServletRequest request) {
         return problem(HttpStatus.BAD_REQUEST, "Request cannot be processed", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    ProblemDetail handleNotFound(ResourceNotFoundException exception, HttpServletRequest request) {
+        return problem(HttpStatus.NOT_FOUND, "Resource not found", exception.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -48,4 +54,3 @@ public class ApiExceptionHandler {
         return detail;
     }
 }
-
