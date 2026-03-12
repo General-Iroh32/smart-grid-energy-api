@@ -38,4 +38,44 @@ class GridAnalyticsServiceTest {
                 .extracting(point -> point.consumptionKwh())
                 .isEqualTo(new BigDecimal("6.0"));
     }
+
+    @Test
+    void comparesGridAreasAndRanksThemByConsumption() {
+        Instant now = Instant.parse("2026-08-20T14:30:00Z");
+        var service = serviceWithReadings(now);
+
+        var result = service.loadByArea("6h");
+
+        assertThat(result.totalConsumptionKwh()).isEqualByComparingTo("11.0");
+        assertThat(result.areas()).hasSize(2);
+        assertThat(result.areas().getFirst().gridArea()).isEqualTo("Center");
+        assertThat(result.areas().getFirst().loadSharePercent()).isEqualByComparingTo("72.73");
+        assertThat(result.areas().getFirst().operationalState()).isEqualTo("ELEVATED");
+    }
+
+    @Test
+    void identifiesReadingsAboveAnOperatorThreshold() {
+        Instant now = Instant.parse("2026-08-20T14:30:00Z");
+        var service = serviceWithReadings(now);
+
+        var result = service.anomalies("24h", new BigDecimal("4.5"));
+
+        assertThat(result).singleElement().satisfies(anomaly -> {
+            assertThat(anomaly.meterId()).isEqualTo("AT-001");
+            assertThat(anomaly.consumptionKwh()).isEqualByComparingTo("6.0");
+            assertThat(anomaly.excessPercent()).isEqualByComparingTo("33.33");
+        });
+    }
+
+    private GridAnalyticsService serviceWithReadings(Instant now) {
+        MeterReadingRepository repository = mock(MeterReadingRepository.class);
+        SmartMeter center = new SmartMeter("AT-001", "Center");
+        SmartMeter west = new SmartMeter("AT-002", "West");
+        when(repository.findAllByRecordedAtGreaterThanEqualAndRecordedAtLessThan(any(), any()))
+                .thenReturn(List.of(
+                        new MeterReading(center, new BigDecimal("6.0"), now.minusSeconds(1800)),
+                        new MeterReading(center, new BigDecimal("2.0"), now.minusSeconds(1200)),
+                        new MeterReading(west, new BigDecimal("3.0"), now.minusSeconds(900))));
+        return new GridAnalyticsService(repository, Clock.fixed(now, ZoneOffset.UTC));
+    }
 }
