@@ -1,0 +1,471 @@
+openapi: 3.1.0
+info:
+  title: Smart Grid Energy API
+  version: 1.0.0
+  summary: Operational telemetry, meter-fleet and grid-load API
+  description: |
+    Contract for the Smart Grid Operations Console. It accepts synthetic smart-meter
+    telemetry, exposes fleet state and calculates bounded load analytics. The demo is
+    not connected to billing or production utility infrastructure.
+  contact:
+    name: Dzovani Koller
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Readings
+    description: Validated smart-meter telemetry ingestion
+  - name: Meters
+    description: Meter-fleet inventory and operational lifecycle
+  - name: Analytics
+    description: Time-bounded load, area and anomaly analytics
+paths:
+  /api/v1/readings/ingest:
+    post:
+      tags: [Readings]
+      operationId: ingestMeterReading
+      summary: Ingest a smart-meter reading
+      description: Registers an unknown meter on first use and stores one unique reading per meter and timestamp.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestReadingRequest'
+            examples:
+              viennaReading:
+                summary: One Vienna smart-meter signal
+                value:
+                  meterId: AT-VIE-1042
+                  gridArea: Vienna-Center
+                  consumptionKwh: 3.725
+                  recordedAt: '2026-08-21T08:00:00Z'
+      responses:
+        '201':
+          description: Reading accepted and persisted
+          headers:
+            Location:
+              description: Logical readings resource for the meter
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestReadingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A reading already exists for the meter and timestamp
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/v1/meters:
+    get:
+      tags: [Meters]
+      operationId: listMeters
+      summary: List the smart-meter fleet
+      description: Returns operational state and telemetry freshness, optionally filtered by status or grid area.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/MeterStatus'
+        - name: gridArea
+          in: query
+          required: false
+          example: Vienna-Center
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 80
+      responses:
+        '200':
+          description: Matching meters ordered by meter ID
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeterSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/v1/meters/{meterId}/status:
+    patch:
+      tags: [Meters]
+      operationId: changeMeterStatus
+      summary: Change a meter's operational status
+      parameters:
+        - $ref: '#/components/parameters/MeterId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeterStatusRequest'
+            example:
+              status: INACTIVE
+      responses:
+        '200':
+          description: Updated fleet entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeterSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/analytics/grid-load:
+    get:
+      tags: [Analytics]
+      operationId: getGridLoad
+      summary: Aggregate load for the complete grid
+      parameters:
+        - $ref: '#/components/parameters/Timespan'
+      responses:
+        '200':
+          description: Aggregate KPIs and a chronological load profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GridLoadAnalytics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/v1/analytics/grid-areas:
+    get:
+      tags: [Analytics]
+      operationId: compareGridAreas
+      summary: Compare load across grid areas
+      description: Ranks grid areas by total consumption and derives a peak-to-average operational state.
+      parameters:
+        - $ref: '#/components/parameters/Timespan'
+      responses:
+        '200':
+          description: Per-area load distribution and operating state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GridAreaAnalytics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/v1/analytics/anomalies:
+    get:
+      tags: [Analytics]
+      operationId: findLoadAnomalies
+      summary: Find readings above an operator threshold
+      description: Returns at most 50 readings sorted by descending consumption.
+      parameters:
+        - $ref: '#/components/parameters/Timespan'
+        - name: thresholdKwh
+          in: query
+          required: false
+          description: Strict lower bound for returned consumption readings
+          schema:
+            type: number
+            format: double
+            exclusiveMinimum: 0
+            default: 4.5
+          example: 5.25
+      responses:
+        '200':
+          description: Threshold breaches, possibly empty
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 50
+                items:
+                  $ref: '#/components/schemas/LoadAnomaly'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+components:
+  parameters:
+    MeterId:
+      name: meterId
+      in: path
+      required: true
+      description: Stable utility-facing meter identifier
+      schema:
+        type: string
+        minLength: 3
+        maxLength: 64
+      example: AT-VIE-1042
+    Timespan:
+      name: timespan
+      in: query
+      required: false
+      description: UTC lookback window ending at request time
+      schema:
+        $ref: '#/components/schemas/AnalyticsTimespan'
+  responses:
+    BadRequest:
+      description: Invalid query parameter, JSON body or domain transition
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: https://api.dzovani.codes/problems/400
+            title: Validation failed
+            status: 400
+            detail: One or more fields are invalid
+            instance: /api/v1/readings/ingest
+            timestamp: '2026-08-21T08:01:00Z'
+            violations:
+              meterId: must not be blank
+    NotFound:
+      description: The addressed resource does not exist
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    AnalyticsTimespan:
+      type: string
+      enum: [1h, 6h, 24h, 7d]
+      default: 24h
+    MeterStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+    OperationalState:
+      type: string
+      description: Peak-to-average classification for a grid area
+      enum: [NORMAL, ELEVATED, CRITICAL]
+    IngestReadingRequest:
+      type: object
+      additionalProperties: false
+      required: [meterId, gridArea, consumptionKwh, recordedAt]
+      properties:
+        meterId:
+          type: string
+          minLength: 3
+          maxLength: 64
+          pattern: '^[A-Za-z0-9][A-Za-z0-9._-]+$'
+        gridArea:
+          type: string
+          minLength: 2
+          maxLength: 80
+        consumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1000000
+        recordedAt:
+          type: string
+          format: date-time
+    IngestReadingResponse:
+      allOf:
+        - $ref: '#/components/schemas/IngestReadingRequest'
+        - type: object
+          required: [receivedAt]
+          properties:
+            receivedAt:
+              type: string
+              format: date-time
+    UpdateMeterStatusRequest:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/MeterStatus'
+    MeterSummary:
+      type: object
+      additionalProperties: false
+      required: [meterId, gridArea, status, createdAt, readingCount]
+      properties:
+        meterId:
+          type: string
+          example: AT-VIE-1042
+        gridArea:
+          type: string
+          example: Vienna-Center
+        status:
+          $ref: '#/components/schemas/MeterStatus'
+        createdAt:
+          type: string
+          format: date-time
+        readingCount:
+          type: integer
+          format: int64
+          minimum: 0
+        lastReadingAt:
+          type: [string, 'null']
+          format: date-time
+    GridLoadPoint:
+      type: object
+      additionalProperties: false
+      required: [timestamp, consumptionKwh]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        consumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+    GridLoadAnalytics:
+      type: object
+      additionalProperties: false
+      required:
+        - timespan
+        - from
+        - to
+        - totalConsumptionKwh
+        - averageConsumptionKwh
+        - peakConsumptionKwh
+        - readingCount
+        - activeMeterCount
+        - loadProfile
+      properties:
+        timespan:
+          $ref: '#/components/schemas/AnalyticsTimespan'
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        totalConsumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        averageConsumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        peakConsumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        readingCount:
+          type: integer
+          format: int64
+          minimum: 0
+        activeMeterCount:
+          type: integer
+          format: int64
+          minimum: 0
+        loadProfile:
+          type: array
+          items:
+            $ref: '#/components/schemas/GridLoadPoint'
+    GridAreaAnalytics:
+      type: object
+      additionalProperties: false
+      required: [timespan, from, to, totalConsumptionKwh, areas]
+      properties:
+        timespan:
+          $ref: '#/components/schemas/AnalyticsTimespan'
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        totalConsumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        areas:
+          type: array
+          items:
+            $ref: '#/components/schemas/GridAreaLoad'
+    GridAreaLoad:
+      type: object
+      additionalProperties: false
+      required:
+        - gridArea
+        - totalConsumptionKwh
+        - averageConsumptionKwh
+        - peakConsumptionKwh
+        - readingCount
+        - activeMeterCount
+        - loadSharePercent
+        - operationalState
+      properties:
+        gridArea:
+          type: string
+        totalConsumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        averageConsumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        peakConsumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        readingCount:
+          type: integer
+          format: int64
+          minimum: 0
+        activeMeterCount:
+          type: integer
+          format: int64
+          minimum: 0
+        loadSharePercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        operationalState:
+          $ref: '#/components/schemas/OperationalState'
+    LoadAnomaly:
+      type: object
+      additionalProperties: false
+      required: [meterId, gridArea, recordedAt, consumptionKwh, thresholdKwh, excessPercent]
+      properties:
+        meterId:
+          type: string
+        gridArea:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+        consumptionKwh:
+          type: number
+          format: double
+          minimum: 0
+        thresholdKwh:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+        excessPercent:
+          type: number
+          format: double
+          exclusiveMinimum: 0
+    Problem:
+      type: object
+      additionalProperties: true
+      required: [type, title, status, detail, instance, timestamp]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference
+        timestamp:
+          type: string
+          format: date-time
+        violations:
+          type: object
+          additionalProperties:
+            type: string

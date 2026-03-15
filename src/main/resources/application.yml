@@ -25,6 +25,8 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    url: /openapi/smart-grid-api.yaml
+    disable-swagger-default-url: true
 
 app:
   cors:
