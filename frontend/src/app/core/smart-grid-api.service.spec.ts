@@ -46,4 +46,32 @@ describe('SmartGridApiService', () => {
     expect(request.request.body).toEqual(payload);
     request.flush({ ...payload, receivedAt: '2026-08-20T12:00:01Z' });
   });
+
+  it('requests area and anomaly analytics with explicit parameters', () => {
+    service.getGridAreas('7d').subscribe();
+    service.getAnomalies('7d', 6.25).subscribe();
+
+    const areaRequest = http.expectOne(
+      candidate => candidate.url.endsWith('/analytics/grid-areas')
+    );
+    expect(areaRequest.request.params.get('timespan')).toBe('7d');
+    areaRequest.flush({ areas: [] });
+
+    const anomalyRequest = http.expectOne(
+      candidate => candidate.url.endsWith('/analytics/anomalies')
+    );
+    expect(anomalyRequest.request.params.get('thresholdKwh')).toBe('6.25');
+    anomalyRequest.flush([]);
+  });
+
+  it('updates a URL-encoded meter resource', () => {
+    service.changeMeterStatus('AT/VIE 001', 'INACTIVE').subscribe();
+
+    const request = http.expectOne(
+      'http://api.test/api/v1/meters/AT%2FVIE%20001/status'
+    );
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ status: 'INACTIVE' });
+    request.flush({ meterId: 'AT/VIE 001', status: 'INACTIVE' });
+  });
 });

@@ -12,6 +12,12 @@ describe('GridOverviewComponent', () => {
         averageConsumptionKwh: 2.5, peakConsumptionKwh: 6.8,
         readingCount: 17, activeMeterCount: 4, loadProfile: []
       })),
+      getGridAreas: vi.fn().mockReturnValue(of({
+        timespan: '24h', from: '', to: '', totalConsumptionKwh: 42.5, areas: []
+      })),
+      getAnomalies: vi.fn().mockReturnValue(of([])),
+      getMeters: vi.fn().mockReturnValue(of([])),
+      changeMeterStatus: vi.fn(),
       ingestReading: vi.fn()
     };
     await TestBed.configureTestingModule({

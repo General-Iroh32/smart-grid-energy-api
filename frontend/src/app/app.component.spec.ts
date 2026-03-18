@@ -12,6 +12,10 @@ describe('AppComponent', () => {
         provide: SmartGridApiService,
         useValue: {
           getGridLoad: () => of({ timespan: '24h', readingCount: 0, loadProfile: [] }),
+          getGridAreas: () => of({ timespan: '24h', areas: [] }),
+          getAnomalies: () => of([]),
+          getMeters: () => of([]),
+          changeMeterStatus: vi.fn(),
           ingestReading: vi.fn()
         }
       }]
