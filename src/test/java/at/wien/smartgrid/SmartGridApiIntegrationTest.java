@@ -12,7 +12,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,5 +44,13 @@ class SmartGridApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.readingCount").value(1))
                 .andExpect(jsonPath("$.totalConsumptionKwh").value(7.25));
+    }
+
+    @Test
+    void servesTheVersionedOpenApiContract() throws Exception {
+        mockMvc.perform(get("/openapi/smart-grid-api.yaml"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("openapi: 3.1.0")))
+                .andExpect(content().string(containsString("operationId: listMeters")));
     }
 }

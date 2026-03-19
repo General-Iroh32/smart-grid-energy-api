@@ -1,6 +1,9 @@
 spring:
   application:
     name: smart-grid-energy-api
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/smartgrid}
     username: ${DATABASE_USERNAME:smartgrid}

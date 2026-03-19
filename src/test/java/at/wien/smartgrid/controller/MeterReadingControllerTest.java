@@ -72,4 +72,37 @@ class MeterReadingControllerTest {
                 .andExpect(header().string(
                         "Access-Control-Allow-Origin", "http://127.0.0.1:4200"));
     }
+
+    @Test
+    void rejectsMeterIdentifiersOutsideThePublishedContract() throws Exception {
+        mockMvc.perform(post("/api/v1/readings/ingest")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "meterId": "invalid meter/id",
+                                  "gridArea": "Vienna-Center",
+                                  "consumptionKwh": 2.5,
+                                  "recordedAt": "2026-08-20T12:00:00Z"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.violations.meterId").exists());
+    }
+
+    @Test
+    void rejectsFieldsNotDeclaredByThePublishedContract() throws Exception {
+        mockMvc.perform(post("/api/v1/readings/ingest")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "meterId": "AT-001",
+                                  "gridArea": "Vienna-Center",
+                                  "consumptionKwh": 2.5,
+                                  "recordedAt": "2026-08-20T12:00:00Z",
+                                  "uncontractedField": true
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Malformed request body"));
+    }
 }

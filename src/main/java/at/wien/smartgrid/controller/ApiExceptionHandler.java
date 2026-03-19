@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -42,6 +43,15 @@ public class ApiExceptionHandler {
                         (first, ignored) -> first));
         detail.setProperty("violations", violations);
         return detail;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ProblemDetail handleMalformedBody(HttpMessageNotReadableException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Malformed request body",
+                "The JSON body does not match the published API contract",
+                request);
     }
 
     private ProblemDetail problem(
