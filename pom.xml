@@ -13,7 +13,7 @@
 
     <groupId>at.wien.smartgrid</groupId>
     <artifactId>smart-grid-energy-api</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>Smart Grid Energy API</name>
     <description>Reference API for ingesting smart-meter readings and analysing grid load</description>
 
