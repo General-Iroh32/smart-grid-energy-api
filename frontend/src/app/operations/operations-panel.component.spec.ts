@@ -38,8 +38,10 @@ describe('OperationsPanelComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('AT-VIE-1001');
     expect(api.getGridAreas).toHaveBeenCalledWith('24h');
 
+    fixture.componentInstance.error.set('Previous request failed.');
     fixture.nativeElement.querySelector('.meter-row button').click();
     fixture.detectChanges();
     expect(api.changeMeterStatus).toHaveBeenCalledWith('AT-VIE-1001', 'INACTIVE');
+    expect(fixture.componentInstance.error()).toBeNull();
   });
 });

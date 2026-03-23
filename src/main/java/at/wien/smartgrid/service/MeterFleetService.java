@@ -20,7 +20,9 @@ public class MeterFleetService {
     @Transactional(readOnly = true)
     public List<MeterSummaryResponse> list(MeterStatus status, String gridArea) {
         String normalizedArea = gridArea == null || gridArea.isBlank() ? null : gridArea.trim();
-        return meterRepository.findFleet(status, normalizedArea).stream()
+        return meterRepository.findFleet().stream()
+                .filter(meter -> status == null || meter.getStatus() == status)
+                .filter(meter -> normalizedArea == null || meter.getGridArea().equalsIgnoreCase(normalizedArea))
                 .map(meter -> new MeterSummaryResponse(
                         meter.getMeterId(),
                         meter.getGridArea(),
@@ -36,7 +38,7 @@ public class MeterFleetService {
         SmartMeter meter = meterRepository.findByMeterId(meterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Meter not found: " + meterId));
         meter.changeStatus(status);
-        return meterRepository.findFleet(status, meter.getGridArea()).stream()
+        return meterRepository.findFleet().stream()
                 .filter(candidate -> candidate.getMeterId().equals(meterId))
                 .findFirst()
                 .map(candidate -> new MeterSummaryResponse(

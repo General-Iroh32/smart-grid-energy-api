@@ -153,6 +153,7 @@ export class OperationsPanelComponent implements OnChanges, OnInit {
 
   toggleMeter(meter: MeterSummary): void {
     const nextStatus: MeterStatus = meter.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    this.error.set(null);
     this.updatingMeter.set(meter.meterId);
     this.api.changeMeterStatus(meter.meterId, nextStatus).pipe(
       catchError(() => {

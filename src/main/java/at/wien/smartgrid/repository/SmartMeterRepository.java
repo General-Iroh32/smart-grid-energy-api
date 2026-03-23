@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
 
 public interface SmartMeterRepository extends JpaRepository<SmartMeter, UUID> {
 
@@ -23,14 +22,10 @@ public interface SmartMeterRepository extends JpaRepository<SmartMeter, UUID> {
                    max(r.recordedAt) as lastReadingAt
             from SmartMeter m
             left join MeterReading r on r.smartMeter = m
-            where (:status is null or m.status = :status)
-              and (:gridArea is null or lower(m.gridArea) = lower(:gridArea))
             group by m.id, m.meterId, m.gridArea, m.status, m.createdAt
             order by m.meterId
             """)
-    List<MeterFleetView> findFleet(
-            @Param("status") MeterStatus status,
-            @Param("gridArea") String gridArea);
+    List<MeterFleetView> findFleet();
 
     interface MeterFleetView {
         String getMeterId();

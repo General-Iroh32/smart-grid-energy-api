@@ -46,7 +46,10 @@ class MeterReadingRepositoryTest {
         readingRepository.save(new MeterReading(center, new BigDecimal("3.0000"), noon.plusSeconds(60)));
         readingRepository.save(new MeterReading(west, new BigDecimal("1.5000"), noon));
 
-        var fleet = smartMeterRepository.findFleet(MeterStatus.ACTIVE, "Vienna-Center");
+        var fleet = smartMeterRepository.findFleet().stream()
+                .filter(meter -> meter.getStatus() == MeterStatus.ACTIVE)
+                .filter(meter -> meter.getGridArea().equals("Vienna-Center"))
+                .toList();
 
         assertThat(fleet).singleElement().satisfies(meter -> {
             assertThat(meter.getMeterId()).isEqualTo("AT-101");
