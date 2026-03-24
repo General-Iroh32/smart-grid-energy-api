@@ -2,13 +2,12 @@
 .chart-heading { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
 .chart-heading p { margin: 0 0 .25rem; color: var(--lime); text-transform: uppercase; letter-spacing: .14em; font-size: .68rem; font-weight: 700; }
 h3 { margin: 0; font-size: 1.25rem; letter-spacing: -.025em; }
-.chart-heading > span { color: var(--muted); font: .75rem 'DM Mono', monospace; }
+.chart-heading > span { color: var(--muted); font: .75rem var(--font-mono); }
 .chart-wrap { margin-top: 2rem; }
 svg { display: block; width: 100%; height: 260px; overflow: visible; }
 .grid-line { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .load-line { fill: none; stroke: var(--lime); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 5px rgba(149, 244, 91, .35)); }
-.axis { margin-top: .65rem; display: flex; justify-content: space-between; color: var(--muted); font: .7rem 'DM Mono', monospace; }
+.axis { margin-top: .65rem; display: flex; justify-content: space-between; color: var(--muted); font: .7rem var(--font-mono); }
 .empty-state { min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--muted); }
 .empty-state strong { color: var(--text); }.empty-state p { margin: .4rem 0 0; }
 @media (max-width: 560px) { .chart-card { padding: 1rem; } svg { height: 200px; } }
-

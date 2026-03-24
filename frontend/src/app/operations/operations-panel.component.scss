@@ -11,7 +11,7 @@ h3 { margin: .35rem 0 0; font-size: 1rem; }
 .area-card, .panel, .empty { border: 1px solid var(--line); border-radius: 16px; background: rgba(12, 27, 23, .8); }
 .area-card { padding: 1.2rem; }
 .area-title, .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.state { border-radius: 999px; padding: .35rem .55rem; font: 600 .63rem 'DM Mono', monospace; }
+.state { border-radius: 999px; padding: .35rem .55rem; font: 600 .63rem var(--font-mono); }
 .state.normal { color: var(--lime); background: rgba(125, 255, 167, .1); }
 .state.elevated { color: #f3c969; background: rgba(243, 201, 105, .1); }
 .state.critical { color: var(--danger); background: rgba(255, 113, 113, .1); }
@@ -33,7 +33,7 @@ dd { margin: 0; font-size: .85rem; font-weight: 650; }
 .alert-value { text-align: right; }
 .alert-value > strong { color: #f3c969; }
 .meter-row { grid-template-columns: 1.4fr .5fr auto; }
-.meter-row button { min-width: 84px; padding: .42rem .55rem; border: 1px solid rgba(125, 255, 167, .3); border-radius: 8px; color: var(--lime); background: rgba(125, 255, 167, .06); font: 600 .63rem 'DM Mono', monospace; }
+.meter-row button { min-width: 84px; padding: .42rem .55rem; border: 1px solid rgba(125, 255, 167, .3); border-radius: 8px; color: var(--lime); background: rgba(125, 255, 167, .06); font: 600 .63rem var(--font-mono); }
 .meter-row button.inactive { color: var(--muted); border-color: var(--line); background: transparent; }
 .empty-inline { color: var(--muted); margin: 1.3rem 0; }
 @media (max-width: 900px) { .area-grid { grid-template-columns: 1fr 1fr; }.operations-grid { grid-template-columns: 1fr; } }
