@@ -13,7 +13,7 @@
 
     <groupId>at.wien.smartgrid</groupId>
     <artifactId>smart-grid-energy-api</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>Smart Grid Energy API</name>
     <description>Reference API for ingesting smart-meter readings and analysing grid load</description>
 
@@ -69,12 +69,6 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>io.swagger.parser.v3</groupId>
-            <artifactId>swagger-parser</artifactId>
-            <version>${swagger-parser.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -83,6 +77,33 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>openapi-validation</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.swagger.parser.v3</groupId>
+                    <artifactId>swagger-parser</artifactId>
+                    <version>${swagger-parser.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>production</id>
+        </profile>
+    </profiles>
 </project>
