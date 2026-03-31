@@ -26,6 +26,20 @@
               ],
               "outputHashing": "all"
             },
+            "pages": {
+              "baseHref": "./",
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/app/app.config.ts",
+                  "with": "src/app/app.config.pages.ts"
+                }
+              ],
+              "budgets": [
+                { "type": "initial", "maximumWarning": "600kB", "maximumError": "1MB" },
+                { "type": "anyComponentStyle", "maximumWarning": "12kB", "maximumError": "20kB" }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
