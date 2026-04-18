@@ -4,6 +4,17 @@ A full-stack reference application for ingesting smart-meter readings and turnin
 
 > This is a portfolio and learning project built with synthetic demo data. It is not connected to a utility, billing process or real metering infrastructure.
 
+## Live demo
+
+The [interactive dashboard demo](https://general-iroh32.github.io/smart-grid-energy-api/)
+runs entirely in the browser through a deterministic synthetic-data adapter. Period
+selection, telemetry ingestion and meter status changes remain interactive, but the
+state resets on refresh and no request is presented as persisted PostgreSQL data.
+
+The complete Java API, Flyway migration and PostgreSQL write path run through Docker
+Compose as described below. Tagged releases also publish attested backend and frontend
+images to GitHub Container Registry.
+
 ## What it demonstrates
 
 - Validated ingestion through `POST /api/v1/readings/ingest`
@@ -68,6 +79,15 @@ Then open:
 - Health: <http://localhost:8080/actuator/health>
 
 The Compose profile starts PostgreSQL, the API and Nginx-hosted Angular UI. The backend's `demo` profile inserts synthetic readings only when the readings table is empty, so the dashboard is useful on first launch. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to remove the local database volume.
+
+To run a tagged release without building source locally:
+
+```bash
+docker compose -f docker-compose.release.yml up
+```
+
+Set `IMAGE_TAG` to a published semantic version when you want to pin both application
+images instead of using `latest`.
 
 ## OpenAPI contract
 
