@@ -1,128 +1,114 @@
+<div align="center">
+
 # Smart Grid Energy Platform
 
-A full-stack reference application for ingesting smart-meter readings and turning them into an operational grid-control dashboard. The repository combines a Java 21 / Spring Boot API with a strict Angular 22 frontend, PostgreSQL persistence, schema migrations, a contract-first OpenAPI 3.1 definition, containerized local infrastructure and CI.
+**A full-stack operations console for smart-meter ingestion, grid analytics and fleet monitoring.**
 
-> This is a portfolio and learning project built with synthetic demo data. It is not connected to a utility, billing process or real metering infrastructure.
+[![Java CI](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)](https://github.com/General-Iroh32/smart-grid-energy-api/actions)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](src/main/resources/static/openapi/smart-grid-api.yaml)
 
-## Live demo
+[**Open the interactive dashboard →**](https://general-iroh32.github.io/smart-grid-energy-api/)
 
-The [interactive dashboard demo](https://general-iroh32.github.io/smart-grid-energy-api/)
-runs entirely in the browser through a deterministic synthetic-data adapter. Period
-selection, telemetry ingestion and meter status changes remain interactive, but the
-state resets on refresh and no request is presented as persisted PostgreSQL data.
+</div>
 
-The complete Java API, Flyway migration and PostgreSQL write path run through Docker
-Compose as described below. Tagged releases also publish attested backend and frontend
-images to GitHub Container Registry.
+![Smart Grid operations dashboard](docs/assets/dashboard-overview.jpg)
 
-## What it demonstrates
+## The project
 
-- Validated ingestion through `POST /api/v1/readings/ingest`
-- Grid-load analytics through `GET /api/v1/analytics/grid-load?timespan=24h`
-- Grid-area comparison through `GET /api/v1/analytics/grid-areas?timespan=24h`
-- Configurable anomaly detection through `GET /api/v1/analytics/anomalies?thresholdKwh=4.5`
-- Meter-fleet inventory and lifecycle through `GET /api/v1/meters` and `PATCH /api/v1/meters/{meterId}/status`
-- Supported dashboard periods: `1h`, `6h`, `24h` and `7d`
-- JPA domain model for `SmartMeter`, `MeterReading` and `TariffPlan`
-- Flyway-owned PostgreSQL schema with uniqueness, foreign-key and range constraints
-- Consistent RFC 9457 problem responses for validation and domain failures
-- A versioned OpenAPI 3.1 contract with stable operation IDs, examples and RFC 9457 responses
-- Build-time OpenAPI parser validation and Swagger UI configured against the canonical YAML contract
-- Responsive Angular operations dashboard with KPIs, area health, anomaly monitoring, fleet controls, an accessible SVG load profile and telemetry form
-- Explicit loading, error and empty states, plus client- and server-side validation
-- Repeatable Docker Compose environment and separate backend/frontend CI jobs
+Smart Grid Energy Platform is a production-shaped reference application for
+turning smart-meter readings into an operational view of a power grid. It joins
+a Java 21 / Spring Boot API, PostgreSQL and Flyway with a strict Angular frontend,
+a versioned OpenAPI 3.1 contract, containerized delivery and separate CI paths.
 
-## Architecture
+The hosted demo uses deterministic synthetic data and runs entirely in the
+browser. It keeps the dashboard interactive—period selection, telemetry ingest
+and meter lifecycle changes all work—but resets on refresh. The full Docker
+Compose environment exercises the real Java API and PostgreSQL persistence path.
+
+> This is a learning and reference system. It is not connected to a utility,
+> billing workflow or real metering infrastructure.
+
+## What you can explore
+
+- Switch analytics between `1h`, `6h`, `24h` and `7d` windows.
+- Inspect total consumption, peaks, averages and active-meter counts.
+- Compare load share and operating state across grid areas.
+- Surface readings above a configurable anomaly threshold.
+- Register new meter readings through a validated reactive form.
+- Activate and deactivate meters from the fleet view.
+- Exercise RFC 9457 validation, conflict and domain error responses.
+- Explore all API operations through Swagger UI and the canonical YAML contract.
+
+![Area health, anomaly monitor and meter fleet](docs/assets/operations-overview.jpg)
+
+## Two deliberately different demo paths
 
 ```mermaid
-flowchart LR
-    Operator[Operations user] --> UI[Angular 22 dashboard]
-    Meter[Smart-meter client] --> API
-    UI -->|typed HTTP client| API[Spring Web API]
+flowchart TB
+    Visitor[GitHub Pages visitor] --> Static[Angular static build]
+    Static --> Demo[Deterministic in-memory adapter]
+
+    Operator[Local operator] --> UI[Angular + Nginx]
+    UI -->|typed /api client| API[Spring Boot API]
+    Meter[Meter client] --> API
     API --> Validation[DTO validation + Problem Details]
-    API --> Services[Ingestion and analytics services]
-    Services --> Repositories[Spring Data JPA repositories]
-    Repositories --> DB[(PostgreSQL)]
+    Validation --> Services[Ingestion + analytics services]
+    Services --> Repositories[Spring Data JPA]
+    Repositories --> DB[(PostgreSQL 17)]
     Flyway[Flyway migrations] --> DB
-    Contract[Versioned OpenAPI 3.1 contract] --> Docs[Swagger UI]
-    Contract --> Tests[Build-time contract validation]
-    Docs --> API
+    Contract[OpenAPI 3.1 YAML] --> Swagger[Swagger UI]
+    Contract --> ContractTest[Build-time contract test]
 ```
 
-The backend keeps transport models, controllers, application services, persistence repositories and JPA entities in separate packages. Analytics remain database-agnostic at the service boundary: the repository returns readings for a bounded interval and the service produces UTC buckets and aggregate KPIs.
+The static adapter is explicit and replaceable; it does not pretend browser
+state is PostgreSQL. Both paths use the same typed frontend service boundary,
+which keeps the hosted demo useful without weakening the full-stack architecture.
 
-## Stack
+## Technology at a glance
 
-| Area | Technology |
+| Layer | Technology |
 | --- | --- |
-| Backend | Java 21, Spring Boot 3.5, Spring Web, Validation, Spring Data JPA |
-| Data | PostgreSQL 17, Flyway; H2 in PostgreSQL mode for fast integration tests |
-| API | Contract-first OpenAPI 3.1, Swagger UI, RFC 9457 Problem Details, Actuator |
-| Frontend | Angular 22, TypeScript 6 strict mode, signals, reactive forms, RxJS |
-| Quality | JUnit 5, Mockito, MockMvc, Vitest, Angular ESLint |
-| Delivery | Docker Compose, multi-stage images, Nginx, GitHub Actions, Dependabot |
+| Backend | Java 21, Spring Boot 3.5, Spring Web, Bean Validation |
+| Persistence | Spring Data JPA, PostgreSQL 17, Flyway |
+| API contract | OpenAPI 3.1, Swagger UI, RFC 9457 Problem Details |
+| Frontend | Angular 22, TypeScript strict mode, signals, RxJS, reactive forms |
+| Testing | JUnit 5, Mockito, MockMvc, H2 PostgreSQL mode, Vitest |
+| Delivery | Multi-stage Docker images, Nginx, Compose, GitHub Actions, GHCR |
 
-## Run the complete platform
+## Run the full platform
 
-Requirements: Docker Desktop, OrbStack or another Docker Compose-compatible runtime.
+Docker Desktop, OrbStack or another Docker Compose-compatible runtime is enough:
 
 ```bash
+git clone https://github.com/General-Iroh32/smart-grid-energy-api.git
+cd smart-grid-energy-api
 docker compose up --build
 ```
 
-Then open:
-
-- Dashboard: <http://localhost:4200>
-- Swagger UI: <http://localhost:8080/swagger-ui.html>
-- Canonical OpenAPI YAML: <http://localhost:8080/openapi/smart-grid-api.yaml>
-- Generated runtime OpenAPI JSON: <http://localhost:8080/v3/api-docs>
-- Health: <http://localhost:8080/actuator/health>
-
-The Compose profile starts PostgreSQL, the API and Nginx-hosted Angular UI. The backend's `demo` profile inserts synthetic readings only when the readings table is empty, so the dashboard is useful on first launch. Stop the stack with `docker compose down`; add `-v` only when you intentionally want to remove the local database volume.
-
-To run a tagged release without building source locally:
-
-```bash
-docker compose -f docker-compose.release.yml up
-```
-
-Set `IMAGE_TAG` to a published semantic version when you want to pin both application
-images instead of using `latest`.
-
-## OpenAPI contract
-
-The canonical API contract is [`src/main/resources/static/openapi/smart-grid-api.yaml`](src/main/resources/static/openapi/smart-grid-api.yaml). It is checked into the repository, served by the application and used directly by Swagger UI. This keeps operation IDs, request constraints, examples and error payloads reviewable without starting the backend.
-
-`OpenApiContractTest` parses and resolves the complete specification during `mvn verify`, rejects parser messages and checks that every public resource is present. Integration tests additionally verify that the application serves the same YAML document. Spring's generated `/v3/api-docs` remains available as an implementation view; the versioned YAML is the stable client contract.
-
-## Local development
-
-Backend prerequisites: JDK 21+ and Maven 3.6.3+. Frontend prerequisites: Node.js 24 and npm.
-
-```bash
-# terminal 1: database
-docker compose up -d postgres
-
-# terminal 2: backend
-mvn spring-boot:run
-
-# terminal 3: frontend (proxies /api to localhost:8080)
-cd frontend
-npm ci
-npm start
-```
-
-Environment variables:
-
-| Variable | Default |
+| Service | URL |
 | --- | --- |
-| `DATABASE_URL` | `jdbc:postgresql://localhost:5432/smartgrid` |
-| `DATABASE_USERNAME` | `smartgrid` |
-| `DATABASE_PASSWORD` | `smartgrid` |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200,http://127.0.0.1:4200` |
-| `SPRING_PROFILES_ACTIVE` | unset; use `demo` only for synthetic seed data |
+| Operations dashboard | <http://localhost:4200> |
+| Swagger UI | <http://localhost:8080/swagger-ui.html> |
+| Canonical OpenAPI YAML | <http://localhost:8080/openapi/smart-grid-api.yaml> |
+| Generated OpenAPI JSON | <http://localhost:8080/v3/api-docs> |
+| Health endpoint | <http://localhost:8080/actuator/health> |
 
-## API examples
+The `demo` profile seeds synthetic readings only when the readings table is
+empty. Stop the stack with `docker compose down`. Add `-v` only when you
+intentionally want to remove the local PostgreSQL volume.
+
+## API surface
+
+| Method | Resource | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/v1/readings/ingest` | Validate and store meter telemetry |
+| `GET` | `/api/v1/analytics/grid-load` | Aggregate load for a supported time window |
+| `GET` | `/api/v1/analytics/grid-areas` | Compare grid-area load and health |
+| `GET` | `/api/v1/analytics/anomalies` | Find readings over a configurable threshold |
+| `GET` | `/api/v1/meters` | Search the meter fleet by status |
+| `PATCH` | `/api/v1/meters/{meterId}/status` | Change operational status |
 
 Ingest a reading:
 
@@ -137,61 +123,134 @@ curl --fail-with-body http://localhost:8080/api/v1/readings/ingest \
   }'
 ```
 
-Read the last 24 hours of aggregate load:
+Read analytics and fleet state:
 
 ```bash
-curl --fail-with-body 'http://localhost:8080/api/v1/analytics/grid-load?timespan=24h'
+curl --fail-with-body \
+  'http://localhost:8080/api/v1/analytics/grid-load?timespan=24h'
+
+curl --fail-with-body \
+  'http://localhost:8080/api/v1/analytics/anomalies?timespan=24h&thresholdKwh=4.5'
+
+curl --fail-with-body \
+  'http://localhost:8080/api/v1/meters?status=ACTIVE'
 ```
 
-Inspect the fleet and compare operational areas:
+Valid ingestion returns `201 Created`. Malformed and constraint-violating input
+returns `400 Bad Request`; duplicate meter/timestamp pairs return `409 Conflict`.
+All failure payloads use `application/problem+json`.
+
+## Contract-first OpenAPI
+
+The stable contract is checked in at
+[`src/main/resources/static/openapi/smart-grid-api.yaml`](src/main/resources/static/openapi/smart-grid-api.yaml).
+The application serves that exact file and Swagger UI reads it directly, keeping
+operation IDs, schemas, examples, constraints and RFC 9457 responses reviewable
+without relying on runtime generation.
+
+`OpenApiContractTest` parses and resolves the complete contract during
+`mvn verify`, rejects parser messages and verifies every public resource.
+Integration tests additionally prove that the server exposes the canonical YAML.
+Spring's `/v3/api-docs` remains available as an implementation view.
+
+## Local development
+
+Use JDK 21+, Maven and Node.js 24:
 
 ```bash
-curl --fail-with-body 'http://localhost:8080/api/v1/meters?status=ACTIVE'
-curl --fail-with-body 'http://localhost:8080/api/v1/analytics/grid-areas?timespan=24h'
-curl --fail-with-body 'http://localhost:8080/api/v1/analytics/anomalies?timespan=24h&thresholdKwh=4.5'
+# terminal 1 — PostgreSQL
+docker compose up -d postgres
+
+# terminal 2 — Spring Boot API
+mvn spring-boot:run
+
+# terminal 3 — Angular development server
+cd frontend
+npm ci
+npm start
 ```
 
-The ingestion endpoint returns `201 Created`, rejects malformed input with `400 Bad Request`, and returns `409 Conflict` when a meter already has a reading for the same timestamp.
+The frontend development server proxies `/api` to port `8080`.
+
+| Variable | Default |
+| --- | --- |
+| `DATABASE_URL` | `jdbc:postgresql://localhost:5432/smartgrid` |
+| `DATABASE_USERNAME` | `smartgrid` |
+| `DATABASE_PASSWORD` | `smartgrid` |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200,http://127.0.0.1:4200` |
+| `SPRING_PROFILES_ACTIVE` | unset; use `demo` for synthetic seed data |
 
 ## Verification
 
 ```bash
-# backend unit, repository, MVC and full-flow integration tests
+# Java unit, MVC, repository, integration and OpenAPI contract tests
 mvn verify
 
-# frontend static analysis, component/service tests and optimized bundle
+# Angular lint, services, components and optimized build
 cd frontend
 npm ci
 npm run lint
 npm test
 npm run build
 
-# dependency audit
+# Dependency advisory check
 npm audit --audit-level=high
 ```
 
-Backend tests use H2 in PostgreSQL compatibility mode and execute the real Flyway migration. This keeps the suite fast while checking that the JPA mappings and versioned schema agree. PostgreSQL remains the production runtime; Compose is the intended end-to-end database check.
+The current suite contains 19 backend tests and 13 frontend tests. Backend tests
+run the real Flyway migration against H2 in PostgreSQL compatibility mode;
+Docker Compose remains the end-to-end check against PostgreSQL 17.
 
-## Design decisions and limits
+## Releases and deployment
 
-- A reading is unique per meter and timestamp, which makes retries explicit rather than silently duplicating consumption.
-- Unknown meter IDs are registered on first valid ingestion for demo convenience; their operational status can then be managed through the fleet API. A production utility would provision them through an authenticated master-data workflow.
-- JSON requests reject unknown fields, and validation rules intentionally mirror the published OpenAPI contract.
-- Area health uses a transparent peak-to-average classification; production thresholds would be calibrated per transformer and network segment.
-- Dashboard aggregation is intentionally transparent and easy to test. At high event volumes it should move to database-side time buckets, a time-series store or a pre-aggregation pipeline.
-- Authentication, authorization, message-broker ingestion, cryptographic device identity and billing-grade audit trails are deliberately outside this reference scope.
-- Tariff data is modeled and migrated to show the next domain boundary; price calculation is not exposed until its business rules are defined.
+The GitHub Pages workflow builds the dedicated static configuration and deploys
+the browser adapter. Tagged releases publish separately attested backend and
+frontend images to GitHub Container Registry.
 
-## Repository layout
+Run published images without building locally:
+
+```bash
+IMAGE_TAG=1.0.0 docker compose -f docker-compose.release.yml up
+```
+
+Published image names:
+
+```text
+ghcr.io/general-iroh32/smart-grid-energy-api-backend
+ghcr.io/general-iroh32/smart-grid-energy-api-frontend
+```
+
+## Domain and design decisions
+
+- A reading is unique per meter and timestamp, making retries explicit.
+- A new valid meter ID is registered on first ingest for demo convenience.
+- Unknown JSON fields are rejected and DTO constraints mirror the API contract.
+- Analytics use UTC buckets and a bounded repository query.
+- Area health uses a transparent peak-to-average classification.
+- `TariffPlan` establishes the next domain boundary; pricing is not exposed
+  until its business rules are defined.
+
+For a real utility environment, device identity, authorization, message-broker
+ingestion, billing-grade audit trails and database-side time-series aggregation
+would be required. They are intentionally outside this reference system.
+
+## Repository map
 
 ```text
 .
-├── src/main/java/at/wien/smartgrid  # Spring Boot API
-├── src/main/resources/db/migration  # Flyway migrations
-├── src/main/resources/static/openapi # canonical OpenAPI 3.1 contract
-├── src/test                         # backend tests and H2 profile
-├── frontend                         # Angular dashboard and tests
-├── .github/workflows/ci.yml         # Java and Angular CI
-├── Dockerfile                       # backend image
-└── docker-compose.yml               # PostgreSQL + backend + frontend
+├── src/main/java/at/wien/smartgrid      # controllers, services, entities, repositories
+├── src/main/resources/db/migration      # Flyway-owned schema
+├── src/main/resources/static/openapi    # canonical OpenAPI 3.1 contract
+├── src/test                             # backend and contract tests
+├── frontend                             # Angular dashboard, adapter and tests
+├── docs/assets                          # captured application screenshots
+├── .github/workflows                    # CI, Pages and container publication
+├── Dockerfile                           # backend runtime image
+├── docker-compose.yml                   # source-build full stack
+└── docker-compose.release.yml           # published-image full stack
 ```
+
+## Data notice
+
+All meter IDs, locations, readings and screenshots in this repository are
+synthetic. No production or personal metering data is included.
