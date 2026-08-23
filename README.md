@@ -9,11 +9,17 @@
 [![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?logo=openapiinitiative&logoColor=white)](src/main/resources/static/openapi/smart-grid-api.yaml)
 
-[**Open the interactive dashboard →**](https://general-iroh32.github.io/smart-grid-energy-api/)
+[**Interactive dashboard**](https://general-iroh32.github.io/smart-grid-energy-api/)
+&nbsp;·&nbsp;
+[**Live Swagger API**](https://p01--smart-grid-api--vzvbhbrhfkhn.code.run/swagger-ui/index.html)
+&nbsp;·&nbsp;
+[**OpenAPI JSON**](https://p01--smart-grid-api--vzvbhbrhfkhn.code.run/v3/api-docs)
 
 </div>
 
-The hosted dashboard is the fastest way to explore the product without infrastructure. Run Docker Compose when you want the complete Spring Boot, PostgreSQL, Flyway and Swagger UI path.
+The hosted dashboard is the fastest way to explore the product without local
+infrastructure. The live Swagger deployment exposes the real Spring Boot,
+PostgreSQL, Flyway and OpenAPI path on Northflank.
 
 ![Smart Grid operations dashboard](docs/assets/dashboard-overview.jpg)
 
@@ -24,10 +30,12 @@ turning smart-meter readings into an operational view of a power grid. It joins
 a Java 21 / Spring Boot API, PostgreSQL and Flyway with a strict Angular frontend,
 a versioned OpenAPI 3.1 contract, containerized delivery and separate CI paths.
 
-The hosted demo uses deterministic synthetic data and runs entirely in the
-browser. It keeps the dashboard interactive—period selection, telemetry ingest
-and meter lifecycle changes all work—but resets on refresh. The full Docker
-Compose environment exercises the real Java API and PostgreSQL persistence path.
+The hosted dashboard uses deterministic synthetic data and runs entirely in the
+browser. It keeps the UI interactive—period selection, telemetry ingest and
+meter lifecycle changes all work—but resets on refresh. The independently hosted
+[live API](https://p01--smart-grid-api--vzvbhbrhfkhn.code.run/swagger-ui/index.html)
+exercises the real Java service and PostgreSQL persistence path. Docker Compose
+provides the same full-stack setup locally.
 
 > This is a learning and reference system. It is not connected to a utility,
 > billing workflow or real metering infrastructure.
@@ -45,12 +53,16 @@ Compose environment exercises the real Java API and PostgreSQL persistence path.
 
 ![Area health, anomaly monitor and meter fleet](docs/assets/operations-overview.jpg)
 
-## Two deliberately different demo paths
+## Three ways to explore it
 
 ```mermaid
 flowchart TB
     Visitor[GitHub Pages visitor] --> Static[Angular static build]
     Static --> Demo[Deterministic in-memory adapter]
+
+    APIVisitor[API visitor] --> Swagger[Live Swagger UI]
+    Swagger --> HostedAPI[Spring Boot on Northflank]
+    HostedAPI --> HostedDB[(Managed PostgreSQL)]
 
     Operator[Local operator] --> UI[Angular + Nginx]
     UI -->|typed /api client| API[Spring Boot API]
@@ -60,13 +72,13 @@ flowchart TB
     Services --> Repositories[Spring Data JPA]
     Repositories --> DB[(PostgreSQL 17)]
     Flyway[Flyway migrations] --> DB
-    Contract[OpenAPI 3.1 YAML] --> Swagger[Swagger UI]
+    Contract[OpenAPI 3.1 YAML] --> Swagger
     Contract --> ContractTest[Build-time contract test]
 ```
 
 The static adapter is explicit and replaceable; it does not pretend browser
-state is PostgreSQL. Both paths use the same typed frontend service boundary,
-which keeps the hosted demo useful without weakening the full-stack architecture.
+state is PostgreSQL. The hosted API provides the persistent end-to-end path,
+while the browser demo remains safe to reset and explore repeatedly.
 
 ## Technology at a glance
 
@@ -222,29 +234,22 @@ ghcr.io/general-iroh32/smart-grid-energy-api-backend
 ghcr.io/general-iroh32/smart-grid-energy-api-frontend
 ```
 
-### Publish the Spring backend on Railway
+### Live Spring backend
 
-Vercel does not provide an official Java runtime, so the persistent Spring Boot
-API is prepared for Railway instead. `railway.json` selects the repository's
-Dockerfile, waits for the readiness probe and restarts failed containers.
+The public API runs as a Dockerized Spring Boot service on Northflank with a
+managed PostgreSQL database and Flyway migrations. The `demo` profile seeds only
+synthetic meter data.
 
-1. Create a Railway project from this GitHub repository and add a PostgreSQL
-   service named `Postgres`.
-2. Add these variables to the application service:
+| Resource | Live URL |
+| --- | --- |
+| Swagger UI | <https://p01--smart-grid-api--vzvbhbrhfkhn.code.run/swagger-ui/index.html> |
+| Canonical OpenAPI YAML | <https://p01--smart-grid-api--vzvbhbrhfkhn.code.run/openapi/smart-grid-api.yaml> |
+| Generated OpenAPI JSON | <https://p01--smart-grid-api--vzvbhbrhfkhn.code.run/v3/api-docs> |
+| Health | <https://p01--smart-grid-api--vzvbhbrhfkhn.code.run/actuator/health> |
 
-   ```dotenv
-   SPRING_DATASOURCE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
-   SPRING_DATASOURCE_USERNAME=${{Postgres.PGUSER}}
-   SPRING_DATASOURCE_PASSWORD=${{Postgres.PGPASSWORD}}
-   SPRING_PROFILES_ACTIVE=demo
-   CORS_ALLOWED_ORIGINS=https://general-iroh32.github.io
-   ```
-
-3. Generate a public domain for the application service under **Networking**.
-
-Railway supplies `PORT` automatically. Once the readiness check passes, the
-public domain exposes `/swagger-ui.html`, `/openapi/smart-grid-api.yaml` and
-`/actuator/health/readiness` in addition to the versioned API.
+Northflank builds the repository Dockerfile and deploys updates from `main`.
+Database credentials are injected at runtime and are never stored in the
+repository.
 
 ## Domain and design decisions
 
