@@ -222,6 +222,30 @@ ghcr.io/general-iroh32/smart-grid-energy-api-backend
 ghcr.io/general-iroh32/smart-grid-energy-api-frontend
 ```
 
+### Publish the Spring backend on Railway
+
+Vercel does not provide an official Java runtime, so the persistent Spring Boot
+API is prepared for Railway instead. `railway.json` selects the repository's
+Dockerfile, waits for the readiness probe and restarts failed containers.
+
+1. Create a Railway project from this GitHub repository and add a PostgreSQL
+   service named `Postgres`.
+2. Add these variables to the application service:
+
+   ```dotenv
+   SPRING_DATASOURCE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+   SPRING_DATASOURCE_USERNAME=${{Postgres.PGUSER}}
+   SPRING_DATASOURCE_PASSWORD=${{Postgres.PGPASSWORD}}
+   SPRING_PROFILES_ACTIVE=demo
+   CORS_ALLOWED_ORIGINS=https://general-iroh32.github.io
+   ```
+
+3. Generate a public domain for the application service under **Networking**.
+
+Railway supplies `PORT` automatically. Once the readiness check passes, the
+public domain exposes `/swagger-ui.html`, `/openapi/smart-grid-api.yaml` and
+`/actuator/health/readiness` in addition to the versioned API.
+
 ## Domain and design decisions
 
 - A reading is unique per meter and timestamp, making retries explicit.
