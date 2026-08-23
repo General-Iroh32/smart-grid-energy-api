@@ -13,6 +13,8 @@
 
 </div>
 
+The hosted dashboard is the fastest way to explore the product without infrastructure. Run Docker Compose when you want the complete Spring Boot, PostgreSQL, Flyway and Swagger UI path.
+
 ![Smart Grid operations dashboard](docs/assets/dashboard-overview.jpg)
 
 ## The project
